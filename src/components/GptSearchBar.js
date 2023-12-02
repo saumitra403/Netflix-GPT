@@ -24,19 +24,16 @@ const GptSearchBar = () => {
     return json.results;
   };
   const handleGptSearchClick = async () => {
-    const gptQuery =
-      "Act as a Movie/Show Recommendation System and suggest some movies or shows depending on this query: " +
-      searchText.current.value +
-      ". only give me names of 5 movies/shows, comma seperated like the example result given ahead. Example Result: Gadar, Sholay, Don, Golmaal, Housefull";
 
-    const gptResults = await openai.chat.completions.create({
-      messages: [{ role: "user", content: gptQuery }],
-      model: "gpt-3.5-turbo",
+    const gptQuery = await fetch("https://gptsearchfunction-urldgbdo2a-uc.a.run.app", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: searchText.current.value }),
     });
-    if (!gptResults.choices) {
-      //TO-DO: Write Error Handling
-    }
-    console.log(gptResults.choices?.[0]?.message?.content);
+    const gptResults = await gptQuery.json();
+
     const gptItems = gptResults.choices?.[0]?.message?.content?.split(",");
 
     const promiseArray = gptItems.map((item) => searchInTMDB(item));
