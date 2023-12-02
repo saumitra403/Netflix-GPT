@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth } from "../utils/firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,8 @@ const Header = () => {
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {})
@@ -22,6 +24,11 @@ const Header = () => {
         navigate("/error");
       });
   };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -41,7 +48,7 @@ const Header = () => {
       }
     });
 
-    //unsubscribe when component umnounts
+    //unsubscribe when component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -53,6 +60,7 @@ const Header = () => {
   const handleLanguageChange = (e) => {
     dispatch(changeLanguage(e.target.value));
   };
+
   return (
     <div className="absolute px-8 py-2 bg-gradient-to-b from-black z-10 w-screen flex justify-between flex-col md:flex-row ">
       <img className="w-44 mx-auto md:mx-0" src={LOGO} alt="logo"></img>
@@ -76,10 +84,47 @@ const Header = () => {
           >
             {!showGptSearch ? "GPT Search" : "Homepage"}
           </button>
-          <img className="hidden md:block w-12 h-12" alt="usericon" src={user?.photoURL}></img>
-          <button className="font-bold text-white" onClick={handleSignOut}>
-            (Sign Out)
-          </button>
+          <div className="relative top-1">
+            <button
+              onClick={toggleDropdown}
+              className="md:block w-12 h-12"
+              alt="usericon"
+            >
+              <img src={user?.photoURL} alt="usericon" />
+            </button>
+            {dropdownVisible && (
+              <div className="absolute top-16 right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+                <ul className="py-2 text-sm text-gray-700">
+                  <li>
+                    <div class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                      Dashboard
+                    </div>
+                  </li>
+                  <li>
+                    <div class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                      Settings
+                    </div>
+                  </li>
+                  <li>
+                    <div class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                      Earnings
+                    </div>
+                  </li>
+                  <li>
+                    <div
+                      onClick={() => {
+                        handleSignOut();
+                        toggleDropdown();
+                      }}
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Sign out
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
